@@ -1,4 +1,4 @@
-package com.rikagu.streams.dtos;
+package com.rikagu.streams.dtos.stream;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
- * DTO for {@link com.rikagu.streams.entities.User}
+ * DTO for {@link com.rikagu.streams.entities.Stream}
  */
 @Value
-@Builder
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class VerifyUserResponse implements Serializable {
-    String jwtToken;
+@Builder
+public class StartStreamResponse implements Serializable {
+    UUID id;
 }

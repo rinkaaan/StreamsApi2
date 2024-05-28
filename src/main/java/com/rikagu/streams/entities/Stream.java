@@ -27,16 +27,30 @@ public class Stream {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    @Column(unique = true)
-    private String name;
+
+    // Start stream
+    @Column
+    private String channel;
     @Column
     private String streamUrl;
+
+    // Upload stream
     @Column
     private String videoUrl;
+    @Column
+    private String thumbnailUrl;
     @Column
     private Integer duration;
     @Column
     private Date uploadedAt;
+
+    // Transcribe stream
+    @Column
+    private String title;
+    @Column
+    private String description;
+    @Column
+    private String transcriptUrl;
 
     @PrePersist
     public void prePersist() {

@@ -1,13 +1,12 @@
 package com.rikagu.streams.repositories;
 
-import com.rikagu.streams.entities.User;
+import com.rikagu.streams.entities.Stream;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
-    User findByEmail(String email);
-    User findByUsername(String username);
+public interface StreamRepository extends JpaRepository<Stream, UUID> {
+    Stream findByChannel(String name);
 }
