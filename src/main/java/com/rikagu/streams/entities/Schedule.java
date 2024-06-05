@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,23 +25,30 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "streams")
-public class Stream {
+@Table(name = "schedules", indexes = {
+        @Index(name = "idx_schedule_schedule_date", columnList = "schedule_date")
+})
+public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true)
-    private String name;
-    @Column
-    private String streamUrl;
     @Column
     private String scheduleUrl;
     @Column
-    private Date createdAt;
+    private String channelName;
+
+    @Column
+    private Date uploadedAt;
+    @Column
+    private String scheduleDate;
 
     @PrePersist
     public void prePersist() {
-        createdAt = new Date();
+        uploadedAt = new Date();
+        ZoneId japanZone = ZoneId.of("Asia/Tokyo");
+        ZonedDateTime japanTime = ZonedDateTime.now(japanZone);
+        // Keep only the date; e.g. 2021-09-01T10:15:30+09:00 -> 2021-09-01
+        scheduleDate = japanTime.toString().split("T")[0];
     }
 }

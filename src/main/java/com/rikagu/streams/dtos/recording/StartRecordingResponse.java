@@ -1,4 +1,4 @@
-package com.rikagu.streams.dtos.stream;
+package com.rikagu.streams.dtos.recording;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,12 +10,12 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * DTO for {@link com.rikagu.streams.entities.Stream}
+ * DTO for {@link com.rikagu.streams.entities.Recording}
  */
 @Value
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @Builder
-public class StartStreamResponse implements Serializable {
+public class StartRecordingResponse implements Serializable {
     UUID id;
 }

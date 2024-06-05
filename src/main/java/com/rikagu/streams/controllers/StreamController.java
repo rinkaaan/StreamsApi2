@@ -1,10 +1,10 @@
 package com.rikagu.streams.controllers;
 
-import com.rikagu.streams.dtos.stream.StartStreamRequest;
-import com.rikagu.streams.dtos.stream.StartStreamResponse;
-import com.rikagu.streams.dtos.stream.TranscribeStreamRequest;
-import com.rikagu.streams.dtos.stream.UploadStreamRequest;
+import com.rikagu.streams.components.Utils;
+import com.rikagu.streams.dtos.stream.DeleteStreamRequest;
+import com.rikagu.streams.dtos.stream.NewStreamRequest;
 import com.rikagu.streams.entities.Stream;
+import com.rikagu.streams.dtos.stream.UpdateStreamRequest;
 import com.rikagu.streams.repositories.StreamRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,74 +23,71 @@ import java.util.List;
 public class StreamController {
 
     private final StreamRepository streamRepository;
+    private final Utils utils;
 
-    public StreamController(StreamRepository streamRepository) {
+    public StreamController(StreamRepository streamRepository, Utils utils) {
         this.streamRepository = streamRepository;
+        this.utils = utils;
     }
 
-    @PostMapping("/start")
+    @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-    public StartStreamResponse create(@Valid @RequestBody StartStreamRequest request) {
-        Stream existingStream = streamRepository.findByChannel(request.getChannel());
+    public void create(@Valid @RequestBody NewStreamRequest request) {
+        Stream existingStream = streamRepository.findByName(request.getName());
         if (existingStream != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A stream with the same name already exists");
         }
 
         final Stream newStream = Stream.builder()
-                .channel(request.getChannel())
+                .name(request.getName())
                 .streamUrl(request.getStreamUrl())
+                .scheduleUrl(request.getScheduleUrl())
                 .build();
         try {
             streamRepository.save(newStream);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while saving the stream", e);
         }
-
-        return StartStreamResponse.builder()
-                .id(newStream.getId())
-                .build();
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void upload(@Valid @RequestBody UploadStreamRequest request) {
+    public void delete(@Valid @RequestBody DeleteStreamRequest request) {
         Stream existingStream = streamRepository.findById(request.getId()).orElse(null);
         if (existingStream == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No stream with the given name exists");
         }
 
-        existingStream.setVideoUrl(request.getVideoUrl());
-        existingStream.setThumbnailUrl(request.getThumbnailUrl());
-        existingStream.setDuration(request.getDuration());
-
         try {
-            streamRepository.save(existingStream);
+            streamRepository.delete(existingStream);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while saving the stream", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while deleting the stream", e);
         }
     }
 
-    @PostMapping("/transcribe")
+    @PostMapping("/update")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void transcribe(@Valid @RequestBody TranscribeStreamRequest request) {
+    public void update(@Valid @RequestBody UpdateStreamRequest request) {
         Stream existingStream = streamRepository.findById(request.getId()).orElse(null);
         if (existingStream == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No stream with the given name exists");
         }
 
-        existingStream.setTitle(request.getTitle());
-        existingStream.setDescription(request.getDescription());
-        existingStream.setTranscriptUrl(request.getTranscriptUrl());
+        try {
+            utils.copyNonNullProperties(existingStream, request);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while updating the stream", e);
+        }
 
         try {
             streamRepository.save(existingStream);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while saving the stream", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while updating the stream", e);
         }
     }
 
     @GetMapping("/all")
-    public List<Stream> getAllStreams() {
+    public List<Stream> getAll() {
         return streamRepository.findAll();
     }
 }
